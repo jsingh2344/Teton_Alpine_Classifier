@@ -57,7 +57,9 @@ Kappa: 0.7006771385139804
 ```
 And the following confusion matrix:
 
-<img width="781" height="690" alt="image" src="https://github.com/user-attachments/assets/642c2bef-4161-4555-a8c6-a490937f8398" />
+<p>
+    <img width="781" height="690" alt="image" src="https://github.com/user-attachments/assets/642c2bef-4161-4555-a8c6-a490937f8398" />
+</p>
 
  Some classes are correctly predicted at a high rate: for example, the model was perfect when predicting the 58 water pixels, and performed fairly well with grass and trees as well. But it was pretty bad at distinguishing ice and bare rock. Since they are visually difficult to differentiate, and Sentinel-2 uses optical data, this makes some sense. 
 
@@ -70,14 +72,59 @@ Kappa: 0.748228966873247
 ```
 and the confusion matrix became: 
 
-<img width="781" height="690" alt="image" src="https://github.com/user-attachments/assets/cb01e977-b30d-4aa5-b9c7-1de5170f2fc1" />
+<p>
+    <img width="781" height="690" alt="image" src="https://github.com/user-attachments/assets/cb01e977-b30d-4aa5-b9c7-1de5170f2fc1" />
 
+</p>
 Also, here is the Random Forest classification map. Interestingly, it infers a lot more terrain detail than the Dynamic World map, perhaps because Dynamic World uses solely optical data to estimate terrain class.
 
-<img width="1028" height="1200" alt="image" src="https://github.com/user-attachments/assets/201a2e30-6f01-4ced-a629-ed7832975c30" />
+<p>
+    <img width="1028" height="1200" alt="image" src="https://github.com/user-attachments/assets/201a2e30-6f01-4ced-a629-ed7832975c30" />
+</p>
 
 A few other notes:
 - Interestingly, Random Forest cleaned up most of the erronous alpine lakes that Dynamic World features
 - The snow/bare classification is a mess. The model in general seems to prefer snow and ice above a certain elevation, leading much of the alpine tundra/rock to turn into a sea of disconnected snow pixels
+
+
+## Confidence Masking 
+
+My next optimization was using only Dynamic World pixels with probability above a certain threshold. First, I checked how many pixels were excluded by masking out pixels whose label confidence was below each threshold level:
+
+| Threshold | Kept | Excluded |
+|---:|---:|---:|
+| 0.5 | 0.5023440635648382 | 0.49765593643516176 |
+| 0.6 | 0.40947052639879583 | 0.5905294736012042 |
+| 0.7 | 0.27106181748878405 | 0.7289381825112159 |
+| 0.75 | 0.0022276530503183025 | 0.9977723469496816 |
+| 0.8 | 0.0 | 1.0 |
+| 0.85 | 0.0 | 1.0 |
+| 0.9 | 0.0 | 1.0 |
+
+```0.7``` looks like the best option, so I recalibrated the model using only dynamic world pixels with label confidences above ```0.7``` (note that I am aggregating probability bands by taking the median across the summer months).
+
+... except that these were the labels I got when I tried to take a sample: ```{'0': 200, '1': 200, '2': 31, '8': 200}```
+No bare or shrub pixels made the cut. `0.65` gave a similar result, but `0.60` ran with 200 of each label class. And the result were great!
+```
+[[58, 0, 0, 0, 0, 0, 0, 0, 0], [0, 49, 0, 0, 0, 0, 0, 0, 0], [0, 1, 57, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 55, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 55, 3], [0, 0, 0, 0, 0, 0, 0, 9, 47]]
+Accuracy: 0.9610778443113772
+Kappa: 0.9532610684722117
+{'0': 200, '1': 200, '2': 200, '5': 200, '7': 200, '8': 200}
+```
+, with the following confusion matrix:
+
+<p>
+    <img width="781" height="690" alt="image" src="https://github.com/user-attachments/assets/4b6e92a7-d7d0-4f01-add8-4c25ecdb0dbb" />
+</p>
+
+Here is the new RF map, in which 60 percent of pixels don't have Dynamic World labels:
+
+<p>
+    <img width="857" height="1000" alt="image" src="https://github.com/user-attachments/assets/19edd7cc-0af3-4845-be53-97a880eecbd6" />
+</p>
+
+
+
+
 
 
