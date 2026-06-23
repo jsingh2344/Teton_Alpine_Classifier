@@ -76,4 +76,8 @@ Also, here is the Random Forest classification map. Interestingly, it infers a l
 
 <img width="1028" height="1200" alt="image" src="https://github.com/user-attachments/assets/201a2e30-6f01-4ced-a629-ed7832975c30" />
 
+A few other notes:
+- Interestingly, Random Forest cleaned up most of the erronous alpine lakes that Dynamic World features
+- The snow/bare classification is a mess. The model in general seems to prefer snow and ice above a certain elevation, leading much of the alpine tundra/rock to turn into a sea of disconnected snow pixels
+
 
