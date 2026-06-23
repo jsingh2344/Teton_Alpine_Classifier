@@ -61,3 +61,19 @@ And the following confusion matrix:
 
  Some classes are correctly predicted at a high rate: for example, the model was perfect when predicting the 58 water pixels, and performed fairly well with grass and trees as well. But it was pretty bad at distinguishing ice and bare rock. Since they are visually difficult to differentiate, and Sentinel-2 uses optical data, this makes some sense. 
 
+## Adding Sentinel-1 data
+
+To perhaps remedy this, I added the VV and VH bands of Sentinel-1 images to the model features. Accuracy metrics improved slightly to 
+```
+Accuracy: 0.7903682719546742
+Kappa: 0.748228966873247
+```
+and the confusion matrix became: 
+
+<img width="781" height="690" alt="image" src="https://github.com/user-attachments/assets/cb01e977-b30d-4aa5-b9c7-1de5170f2fc1" />
+
+Also, here is the Random Forest classification map. Interestingly, it infers a lot more terrain detail than the Dynamic World map, perhaps because Dynamic World uses solely optical data to estimate terrain class.
+
+<img width="1028" height="1200" alt="image" src="https://github.com/user-attachments/assets/201a2e30-6f01-4ced-a629-ed7832975c30" />
+
+
